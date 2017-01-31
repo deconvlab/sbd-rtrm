@@ -1,16 +1,26 @@
 clc; clear;
 
 % Import Manopt and initialize the SBD package
-run('../../manopt/importmanopt'); disp('Manopt imported.')
+run('../../manopt/importmanopt');   % be sure to set the correct path
 run('../init_sbd');
+disp('');
 
 %% I. SIMULATE DATA FOR SBD:
 %  =========================
-%% 1. Get kernel A:
-kerneltype = 'simulated';       % select from below
-n = 1;                          % number of kernel slices
-k = [49 49];                    % kernel size
 
+%% 1. Kernel settings
+kerneltype = 'random';  % kernel type - see below
+n = 1;               	% number of kernel slices
+k = [25 25];           	% kernel size
+
+%% 2. Activation map settings:
+m = [128 128];          % image size for each slice / observation grid
+
+%   Each pixel has probability theta of being a kernel location
+theta = 1e-3;           % activation concentration
+eta = 1e-3;             % additive noise variance
+
+%% 3. Generate kernel
 switch kerneltype
     case 'random'
     % Randomly generate n kernel slices
@@ -33,14 +43,7 @@ end
 % Need to put each slice back onto the sphere
 A0 = proj2oblique(A0);
 
-%% 2. Simulate activation map:
-m = [256 256];      % image size for each slice / observation grid
-
-% Each pixel has probability theta of being a kernel location
-theta = 1e-3;       % activation concentration
-eta = 1e-3;         % additive noise variance
-
-
+%% 4. Simulate activation map:
 % Generate activation map
 X0_good = false;
 while ~X0_good
@@ -67,7 +70,7 @@ params.nrefine = 2;                 % number of refinements
 
 % Want entries of X to be nonnegative: see SBD_main.m
 params.signflip = 0.2;
-
+params.xpos     = true;
 
 %% 2. The fun part
-[Aout, Xout, extras] = SBD_main( Y, k, params, dispfun );
+[Aout, Xout, extras] = SBD( Y, k, params, dispfun );

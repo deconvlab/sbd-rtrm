@@ -1,4 +1,4 @@
-function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
+function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin)
 %ASolve_MANOPT     BD using Manopt solvers.
 %   - Core usage:
 %       [ Aout, Xsol, Stats ] = Asolve_Manopt( Y, Ain, lambda, mu )
@@ -53,7 +53,7 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
     problem.egrad = @(a, store) egradfun(a, store,  Y, k, n, lambda, mu, xinit );
     problem.ehess = @(a, u, store) ehessfun(a, u, store,  Y, k, n, lambda, mu, xinit );
     
-    options.statsfun = @(problem, a, stats, store) statsfun( problem, a, stats, store, k, n, saveiterates, dispfun);
+    options.statsfun = @(problem, a, stats, store) statsfun( problem, a, stats, store, suppack, dispfun);
     %options.stopfun = @(problem, x, info, last) stopfun(problem, x, info, last, TRTOL);
     
     % Run Manopt solver:
@@ -117,11 +117,16 @@ function [ store ] = computeX( a, store, Y, k, n, lambda, mu, xinit )
     store.cost = sol.f;
 end
 
-function [ stats ] = statsfun( problem, a, stats, store, k, n, saveiterates, dispfun) %#ok<INUSL>
-    if saveiterates
-        stats.A = reshape(a, [k n]);
+function [ stats ] = statsfun( problem, a, stats, store, sav, dispfun) %#ok<INUSL>
+    if suppack.saveiterates
+        stats.A = reshape(a, [suppack.k suppack.n]);
         stats.X = store.X;      % So X could be returned at the end.
         stats.W = store.W;
     end
     dispfun(a, store.X);
+end
+
+function s = var2struct(varargin)
+  names = arrayfun(@inputname,1:nargin,'UniformOutput',false);
+  s = cell2struct(varargin,names,2);
 end

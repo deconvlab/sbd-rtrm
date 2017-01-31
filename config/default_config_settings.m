@@ -8,11 +8,14 @@ function [] = default_config_settings( mode )
 %
 
     fp = [fileparts(mfilename('fullpath')) '\'];
-    clean = @() eval('clearvars -except fp mode clean');
+    clean = @() eval('clearvars -except fp mode clean shared');
+    
+    %% Shared settings
+    shared.mu = 1e-6;           % pseudo-Huber approximation parameter
     
     %% Settings for ASOLVE_MANOPT.M
     
-    mu = 1e-6;              	% pseudo-Huber approximation parameter
+    mu = shared.mu;	
     saveiterates = false;       % keep Asolve iterates?
     
     % Manopt settings:
