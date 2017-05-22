@@ -1,7 +1,6 @@
 clc; clear;
 
 % Import Manopt and initialize the SBD package
-run('../../manopt/importmanopt');   % be sure to set the correct path
 run('../init_sbd');
 fprintf('\n\n');
 

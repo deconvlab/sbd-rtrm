@@ -1,7 +1,6 @@
 clc; clear;
 
 % Import Manopt and initialize the SBD package
-run('../../manopt/importmanopt');   % be sure to set the correct path
 run('../init_sbd');
 fprintf('\n\n');
 
@@ -10,7 +9,7 @@ fprintf('\n\n');
 
 %% 1. Kernel settings - see kernel types below
 kerneltype = 'simulated_STM';   
-n = 1;               	% number of kernel slices
+n = 2;               	% number of kernel slices
 k = [31 31];           	% kernel size
 
 %% 2. Activation map settings:
@@ -47,11 +46,15 @@ A0 = proj2oblique(A0);
 % Generate activation map
 X0_good = false;
 while ~X0_good
-    X0 = double(rand(m) <= theta);              % activations are on / off
+    X0 = double(rand(m) <= theta);      % activations are on / off
     X0_good = sum(X0(:) ~= 0) > 0;
 end
 
-Y = convfft2(A0, X0) + sqrt(eta)*randn(m);     % observation
+Y = zeros([m n]);
+for i = 1:n                           	% observation
+    Y(:,:,i) = convfft2(A0(:,:,i), X0);     
+end
+Y = Y + sqrt(eta)*randn([m n]);
 
 %% II. Sparse Blind Deconvolution:
 %  ===============================

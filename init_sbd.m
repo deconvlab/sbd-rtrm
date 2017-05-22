@@ -14,7 +14,7 @@ function [] = init_sbd( mode, setdefconfig )
     
     % Check if ManOpt has been imported
     if exist('trustregions', 'file') ~= 2
-        error('Error initializing SBD package.\nManopt hasn''t been imported yet!  http://www.manopt.org%s','');
+        error('Manopt needs to be imported: <a href="http://www.manopt.org">http://www.manopt.org</a>.%s','');
     end
     
     % Add subdirectories to path
