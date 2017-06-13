@@ -3,6 +3,7 @@ This package performs blind deconvolution under the data model
 <p align="center">
     <img src="./docs/model.png" alt="model" height="130"/>
 </p>
+
 Here the kernel **A**
 
 
