@@ -4,7 +4,7 @@ This package performs blind deconvolution under the data model
     <img src="./docs/model.png" alt="model" height="130"/>
 </p>
 
-Here the kernel **A** k_1 << n_1
+Here the *kernel* **A** is a "template signature" tensor that is measured across *s* "slices" and is small in size relative to the observation window. The observation consists of the collection of noisy 2D convolutions between the slices of **A** and the *activation map* **X**
 
 
 ## Setup
