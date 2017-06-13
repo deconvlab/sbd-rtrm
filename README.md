@@ -1,10 +1,14 @@
 # Sparse blind deconvolution using the Riemannian Trust-Region Method (RTRM)
 This package performs blind deconvolution under the data model
 <p align="center">
-    <img src="./docs/model.png" alt="model" height="130"/>
+    <img src="./docs/model.png" alt="model" height="100"/>
 </p>
 
-Here the *kernel* **A** is a "template signature" tensor that is measured across *s* "slices" and is small in size relative to the observation window. The observation consists of the collection of noisy 2D convolutions between the slices of **A** and the *activation map* **X**
+Here the *kernel* **A** is a "template signature" tensor that is measured across *s* "slices" and is small in size relative to the observation window. The observation consists of the collection of noisy 2D convolutions between the slices of **A** and a *sparse activation map* **X**. 
+
+A nonconvex optimization problem is solved using RTRM to recover **A** and **X** from **Y** -- RTRM strongly guarantees that a local minimum will be found.
+
+
 
 
 ## Setup
