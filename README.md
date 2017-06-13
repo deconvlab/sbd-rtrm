@@ -1,7 +1,7 @@
 # Sparse blind deconvolution using the Riemannian Trust-Region Method (RTRM)
 This package performs blind deconvolution under the data model
 
-<center><a href="https://www.codecogs.com/eqnedit.php?latex=\mathcal{Y}&space;=&space;\mathcal&space;A&space;\diamond\mathcal&space;X&space;&plus;&space;\mathcal&space;N" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathcal{Y}&space;=&space;\mathcal&space;A&space;\diamond\mathcal&space;X&space;&plus;&space;\mathcal&space;N" title="\mathcal{Y} = \mathcal A \diamond\mathcal X + \mathcal N" /></a></center>
+<a href="https://www.codecogs.com/eqnedit.php?latex=\mathcal{Y}&space;=&space;\mathcal&space;A&space;\diamond\mathcal&space;X&space;&plus;&space;\mathcal&space;N" target="_blank"><img align="center" src="https://latex.codecogs.com/gif.latex?\mathcal{Y}&space;=&space;\mathcal&space;A&space;\diamond\mathcal&space;X&space;&plus;&space;\mathcal&space;N" title="\mathcal{Y} = \mathcal A \diamond\mathcal X + \mathcal N" /></a>
 
 ## Setup
  1. Ensure the ManOpt package is installed for RTRM [(http://www.manopt.org)](http://www.manopt.org).
