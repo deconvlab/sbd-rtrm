@@ -1,9 +1,9 @@
 # Sparse blind deconvolution using the Riemannian Trust-Region Method (RTRM)
 This package performs blind deconvolution under the data model
 <p align="center">
-    <img src="./docs/math/model.png"/ alt="model" height="130">
-    <img alt="model"/>
+    <img src="./docs/math/model.png" alt="model" height="130"/>
 </p>
+Here the kernel <img src="./docs/math/mcA.png" height="30"/> is a tensor that consists of a small (i.e. *k_1*<<*n_1*, *k_2*<<*n_2*) "template signature" taken across *s* "measurement slices" <img src="./docs/math/diamond.png" height="10"/> 
 
 
 ## Setup
