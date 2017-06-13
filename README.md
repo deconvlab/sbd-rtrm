@@ -4,7 +4,7 @@ This package performs blind deconvolution under the data model
     <img src="./docs/model.png" alt="model" height="130"/>
 </p>
 
-Here the kernel **A**
+Here the kernel **A** k_1 << n_1
 
 
 ## Setup
