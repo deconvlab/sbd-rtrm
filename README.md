@@ -13,3 +13,4 @@ For documentations, info and references see [docs/README.ipynb](./docs/README.ip
 
 ## Upcoming changes
 - Make `SBD.m` work for multiple slices of data
+- Account for border effects
