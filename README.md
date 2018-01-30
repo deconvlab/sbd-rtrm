@@ -5,3 +5,11 @@
 Our package is motivated by studies in blind deconvolution as a nonconvex optimization problem, and by applications in Scanning Tunneling Microscopy.
 
 For documentations, info and references see [docs/README.ipynb](./docs/README.ipynb).
+
+## Updates
+**2018-02-01** (In progress):
+- Option to solve for **X**>=0 `Xpos` is included.
+- Xsolver changed from pdNCG to FISTA, and the sparsity surrogate is changed from pseudo-Huber to Huber function.
+
+## Upcoming changes
+- Make `SBD.m` work for multiple slices of data

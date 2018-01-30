@@ -6,27 +6,27 @@ function [ Aout, Xout, extras ] = SBD( Y, k, params, dispfun )
 %   The options struct should include the fields:
 %       lambda1,  float > 0  : regularization parameter for Phase I
 %       phase2,   bool       : whether to do Phase II (refinement) or not
-%       
+%
 %   IF phase2 == true, then the following fields should also be included:
 %       kplus,    int > 0    : border padding (pixels) for sphere lifting
 %       lambda2,  float > 0  : FINAL reg. param. value for Phase II
-%       
+%
 %       nrefine,  int >= 1   : number of refinements for Phase II.
-%           Refinement 1 lifts the sphere and uses lambda1, successive 
-%           refinements decrease lambda down to lambda2; 
+%           Refinement 1 lifts the sphere and uses lambda1, successive
+%           refinements decrease lambda down to lambda2;
 %           i.e. if nrefine == 1, then no decrease in lambda is made.
-%           
+%
 %
 %   Finally, two optional fields for the struct. These features are
 %   automatically disabled if the fields are not included or are empty:
 %
-%       signflip, float      : attempts to choose the sign of A and X after 
-%           each ASolve so the majority of activations in X are positive. 
-%           
-%           Setting signflip < 0 disables this feature. 
-%           
-%           Setting signflip >= 0 considers the 'activations' of X to be 
-%           entries with abs. value geq signflip * max(X(:)), then 
+%       signflip, float      : attempts to choose the sign of A and X after
+%           each ASolve so the majority of activations in X are positive.
+%
+%           Setting signflip < 0 disables this feature.
+%
+%           Setting signflip >= 0 considers the 'activations' of X to be
+%           entries with abs. value geq signflip * max(X(:)), then
 %           checking forthe potential sign flip.
 %
 %
@@ -70,7 +70,7 @@ dispfun1 = @(A, X) dispfun(Y, A, X, k, [], 1);
 fprintf('PHASE I: \n=========\n');
 A = randn([k n]); A = A/norm(A(:));
 
-[A, Xsol, info] = Asolve_Manopt( Y, A, lambda1, [], dispfun1);
+[A, Xsol, info] = Asolve_Manopt( Y, A, lambda1, [], xpos, dispfun1);
 extras.phase1.A = A;
 extras.phase1.X = Xsol.X;
 extras.phase1.info = info;
@@ -79,7 +79,7 @@ extras.phase1.info = info;
 if params.phase2
     k2 = k + 2*kplus;
     dispfun2 = @(A, X) dispfun(Y, A, X, k2, 0, 1);
-    
+
     A2 = zeros([k2 n]);
     A2(kplus(1)+(1:k(1)), kplus(2)+(1:k(2)), :) = A;
     X2sol = Xsol;
@@ -87,14 +87,14 @@ if params.phase2
     %X2sol.W = circshift(Xsol.W,-kplus);
     % clear A Xsol;
 
-    lambda = lambda1; 
+    lambda = lambda1;
     score = zeros(2*kplus+1);
     fprintf('\n\nPHASE II: \n=========\n');
     lam2fac = (lambda2/lambda1)^(1/nrefine);
     i = 1;
     while i <= nrefine + 1
-        fprintf('lambda = %.1e: \n', lambda);    
-        [A2, X2sol, info] = Asolve_Manopt( Y, A2, lambda, X2sol, dispfun2 );
+        fprintf('lambda = %.1e: \n', lambda);
+        [A2, X2sol, info] = Asolve_Manopt( Y, A2, lambda, X2sol, xpos, dispfun2 );
         fprintf('\n');
 
         %Attempt to 'unshift" the a and x by taking the l1-norm over all k-contiguous elements:
@@ -118,11 +118,11 @@ if params.phase2
         extras.phase2(idx).X = X2sol.X;
         extras.phase2(idx).info = info;
         if i == 1;  extras.phase2 = fliplr(extras.phase2);  end
-        
+
         dispfun2(A2,X2sol.X);
         lambda = lambda*lam2fac;
         i = i+1;
-        
+
     end
 end
 
