@@ -41,29 +41,26 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
 
 
     %% Iterate:
-    doagain = true; it = 0;
+    doagain = true; it = 0; costs = NaN(MAXIT,1);
     t=1; W = X;
     while doagain
 	it = it + 1;
         % Gradients and Hessians:
-        grad_fW = zeros(m);
+        grad_fW = zeros(m); R_A = zeros(m);
         for i = 1:n     % sum up
             grad_fW = grad_fW + convfft2( A(:,:,i), convfft2(A(:,:,i), W) - Y(:,:,i), 1 );
+            R_A = R_A + fft2(A(:,:,i),m(1),m(2));
         end
 
         % FISTA update
-        L = 1;  %TODO Work out the Lipschitz constant!
+        L = max(R_A(:));
         X_ = prox_huber(W - 1/L*grad_fW, lambda/L, mu, xpos);
         t_ = (1+sqrt(1+4*t^2))/2;
         W = X_ + (t-1)/t_*(X_-X)
         X = X_; t = t_;
 
         %TODO Check conditions to repeat iteration:
-        if ~alphatoolow
-            X = X_new;
-            f = f_new;
-        end
-        doagain = norm(Hfun(xDelta(:))) > EPSILON && ~alphatoolow && (it < MAXIT);
+        doagain = norm(Hfun(xDelta(:))) > EPSILON && (it < MAXIT);
     end
 
     % Return solution:
@@ -71,6 +68,7 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
     Xsol.W = W;         % dummy variable for compatibility with pdNCG.
     Xsol.f = f;
     info.numit = it;
+    info.costs = costs(1:it);
 end
 
 function [ out ] = obj_function ( X, A, Y, lambda, mu )
