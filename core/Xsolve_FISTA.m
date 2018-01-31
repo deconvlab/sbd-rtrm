@@ -24,41 +24,51 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
 
     %% Checking arguments:
     nvararg = numel(varargin);
-    if nvararg > 1
+    if nvararg > 2
         error('Too many input arguments.');
     end
 
-    X = zeros(m);
-    idx = 1;
+    idx = 1; X = zeros(m);
     if nvararg >= idx && ~isempty(varargin{idx})
         X = varargin{idx};
     end
     f = objfun(X);
 
+    idx = 2; xpos = false;
+    if nvararg >= idx && ~isempty(varargin{idx})
+        xpos = varargin{idx};
+    end
+
 
     %% Iterate:
     doagain = true; it = 0;
+    t=1; W = X;
     while doagain
 	it = it + 1;
         % Gradients and Hessians:
-        tmp = zeros(m);
+        grad_fW = zeros(m);
         for i = 1:n     % sum up
-            tmp = tmp + convfft2( A(:,:,i), convfft2(A(:,:,i), X) - Y(:,:,i), 1 );
+            grad_fW = grad_fW + convfft2( A(:,:,i), convfft2(A(:,:,i), W) - Y(:,:,i), 1 );
         end
-        gx = tmp(:) + lambda * X(:)./sqrt(mu^2 + X(:).^2);
 
-        % Check conditions to repeat iteration:
+        % FISTA update
+        L = 1;  %TODO Work out the Lipschitz constant!
+        X_ = prox_huber(W - 1/L*grad_fW, lambda/L, mu, xpos);
+        t_ = (1+sqrt(1+4*t^2))/2;
+        W = X_ + (t-1)/t_*(X_-X)
+        X = X_; t = t_;
+
+        %TODO Check conditions to repeat iteration:
         if ~alphatoolow
             X = X_new;
             f = f_new;
         end
         doagain = norm(Hfun(xDelta(:))) > EPSILON && ~alphatoolow && (it < MAXIT);
-
     end
 
     % Return solution:
     Xsol.X = X;
-    Xsol.W = X;         % dummy variable for compatibility with pdNCG.
+    Xsol.W = W;         % dummy variable for compatibility with pdNCG.
     Xsol.f = f;
     info.numit = it;
 end

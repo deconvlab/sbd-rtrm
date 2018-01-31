@@ -7,25 +7,25 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
 %       [ ... ] = Xsolve_pdNCG( ... , Xinit )
 %
 %   Algorithm from (Fountoulakis and Gondzio '14).
-        
+
     % Initialize variables and function handles:
     load([fileparts(mfilename('fullpath')) '\..\config\Xsolve_config.mat']);
-    
+
     m = size(Y);
     if (numel(m) > 2)
         n = m(3); m = m(1:2);
     else
         n = 1;
     end
-    
+
     objfun = @(X) obj_function ( X, A, Y, lambda, mu );
-    
+
     %% Checking arguments:
     nvararg = numel(varargin);
     if nvararg > 1
         error('Too many input arguments.');
     end
-    
+
     X = zeros(m); W = zeros(m);
     idx = 1;
     if nvararg >= idx && ~isempty(varargin{idx})
@@ -37,11 +37,11 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
         end
     end
     f = objfun(X);
-    
+
 
     %% Iterate:
     doagain = true; it = 0;
-    while doagain 
+    while doagain
 	it = it + 1;
 
         % Gradients and Hessians:
@@ -50,12 +50,12 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
             tmp = tmp + convfft2( A(:,:,i), convfft2(A(:,:,i), X) - Y(:,:,i), 1 );
         end
         gx = tmp(:) + lambda * X(:)./sqrt(mu^2 + X(:).^2);
-        
+
         D = 1./sqrt(mu^2 + X(:).^2);
         Hdiag = lambda*D.*(1 - D.*X(:).*W(:));
         Hfun = @(v) Hxx_function(v, m, A, Hdiag);
         PCGPRECOND = @(v) v./(Hdiag + 1);
-        
+
         % Solve for xDelta using PCG:
         [xDelta,~] = pcg(Hfun, -gx, PCGTOL, PCGIT, PCGPRECOND);
         xDelta = reshape(xDelta, m);
@@ -64,27 +64,27 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
         wDelta = D.*( 1 - D.*X(:).*W(:) ).*xDelta(:) - ( W(:) - D.*X(:) );
         W = W + reshape(wDelta, m);
         W = min(abs(W), 1).*sign(W);
-        
+
         % Update the primal variable by backtracking:
         alpha = 1/C3; f_new = Inf; alphatoolow = false;
         while f_new > f - C2*alpha*norm(Hfun(xDelta(:)))^2 && ~alphatoolow
             alpha = C3*alpha;
             X_new = X + alpha*xDelta;
             f_new = objfun(X_new);
-            
+
             % [f_new f C2*alpha*norm(Hfun(xDelta(:)))^2]
             alphatoolow = alpha < ALPHATOL;
         end
-        
+
         % Check conditions to repeat iteration:
         if ~alphatoolow
             X = X_new;
             f = f_new;
         end
         doagain = norm(Hfun(xDelta(:))) > EPSILON && ~alphatoolow && (it < MAXIT);
-    
+
     end
-    
+
     % Return solution:
     Xsol.X = X;
     Xsol.W = W;
@@ -94,14 +94,14 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
 end
 
 function [ out ] = obj_function ( X, A, Y, lambda, mu )
-    m = size(Y); 
-    
+    m = size(Y);
+
     if (numel(m) > 2)
         n = m(3); m = m(1:2);
     else
         n = 1;
     end
-    
+
     out = 0;
     for i = 1:n
         out = out + norm(convfft2(A(:,:,i), reshape(X, m)) - Y(:,:,i), 'fro')^2/2;
