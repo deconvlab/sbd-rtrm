@@ -1,6 +1,6 @@
 function [ H_v ] = H_function( v, Y, A, X, lambda, mu )
 %H_FUNCTION     Apply the Euclidean Hessian to a vector.
-    load([fileparts(mfilename('fullpath')) '\..\..\config\Hfunction_config.mat']);
+    load([fileparts(mfilename('fullpath')) '/../../config/Hfunction_config.mat']);
     
     m = size(Y); k = size(A); n = size(Y,3);
     m = m(1:2); k = k(1:2);

@@ -18,7 +18,7 @@ function [] = init_sbd( mode, setdefconfig )
     end
     
     % Add subdirectories to path
-    fp = [fileparts(mfilename('fullpath')) '\'];
+    fp = [fileparts(mfilename('fullpath')) '/'];
     addpath(fp);
     for d = {'core', 'utils', 'config'}
         addpath(genpath([fp d{1}]));

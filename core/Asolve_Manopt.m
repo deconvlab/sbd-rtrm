@@ -7,7 +7,7 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
 %       [ ... ] = Asolve_Manopt( ... , Xinit, Xpos, dispfun )
 %
 
-    load([fileparts(mfilename('fullpath')) '\..\config\Asolve_config.mat']);
+    load([fileparts(mfilename('fullpath')) '/../config/Asolve_config.mat']); %#ok<*LOAD>
 
     k = size(Ain);
     if (numel(k) > 2)
@@ -20,15 +20,8 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
 
     %% Handle the extra variables:
     nvarargin = numel(varargin);
-    if nvarargin > 2
+    if nvarargin > 3
         error('Too many input arguments.');
-    end
-
-    idx = 1;
-    if nvarargin < idx || isempty(varargin{idx})
-        xinit = Xsolve_pdNCG(Y, Ain, lambda, mu, []);
-    else
-        xinit = varargin{idx};
     end
 
     idx = 2;
@@ -36,6 +29,13 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
         xpos = false;
     else
         xpos = varargin{idx};
+    end
+    
+    idx = 1;
+    if nvarargin < idx || isempty(varargin{idx})
+        xinit = Xsolve_FISTA(Y, Ain, lambda, mu, [], xpos);
+    else
+        xinit = varargin{idx};
     end
 
     idx = 3;
@@ -80,7 +80,7 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
         Xsol.X = extras.Xiter(:,:,end);
         Xsol.W = info(end).W;
     else
-        Xsol = Xsolve_FISTA( Y, Aout, lambda, mu, suppack.xinit, xpos );
+        Xsol = Xsolve_FISTA( Y, Aout, lambda, mu, xinit, xpos );
     end
 end
 
@@ -119,7 +119,7 @@ function [ store ] = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos )
     % Updates the cache to store X*(A), and the active-set whenever a new
     % a new iteration by the trust-region method needs it.
 
-    sol = Xsolve_pdNCG( Y, reshape(a, [k n]), lambda, mu, xinit, xpos );
+    sol = Xsolve_FISTA( Y, reshape(a, [k n]), lambda, mu, xinit, xpos );
 
     store.X = sol.X;
     store.W = sol.W;

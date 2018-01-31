@@ -8,9 +8,10 @@ function [ h ] = huber( mu )
     h.diffsubg = @(x, y, lambda, xpos) diffsubg(x, y, lambda, mu, xpos);
 end
 
-function [ gx ] = cost(x, lambda, mu)
+function [ hx ] = cost(x, lambda, mu)
     leq = abs(x) <= mu;
     hx = sum(x(leq).^2/2/mu) + sum(abs(x(~leq)) - mu/2);
+    hx = lambda*hx;
 end
 
 function [ proxh ] = prox(x, lambda, mu, xpos)
@@ -20,8 +21,8 @@ function [ proxh ] = prox(x, lambda, mu, xpos)
 
     leq = abs(x) <= lambda + mu;
     proxh = zeros(size(x));
-    proxh(leq) = x./(1+lambda/mu);
-    proxh(~leq) = x - lambda*sign(x);
+    proxh(leq) = x(leq)./(1+lambda/mu);
+    proxh(~leq) = x(~leq) - lambda*sign(x(~leq));
 
     if xpos;  proxh = max(proxh,0);  end
 end
@@ -35,8 +36,8 @@ function [ eps ] = diffsubg(x, y, lambda, mu, xpos)
     subg = zeros(size(x));
 
     subg(leq) = x(leq)/mu;
-    subg(~leq) = sign(x);
+    subg(~leq) = sign(x(~leq));
     if xpos;  subg(x<0) = 0;  end
 
-    eps = y - x;
+    eps = y - lambda*subg;
 end
