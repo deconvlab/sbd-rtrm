@@ -12,6 +12,7 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
     % Initialize variables and function handles:
     addpath('helpers')
     load([fileparts(mfilename('fullpath')) '\..\config\Xsolve_config.mat']);
+    g = huber(mu);
 
     m = size(Y);
     if (numel(m) > 2)
@@ -19,8 +20,6 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
     else
         n = 1;
     end
-
-    objfun = @(X) obj_function ( X, A, Y, lambda, mu );
 
     %% Checking arguments:
     nvararg = numel(varargin);
@@ -32,7 +31,6 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
     if nvararg >= idx && ~isempty(varargin{idx})
         X = varargin{idx};
     end
-    f = objfun(X);
 
     idx = 2; xpos = false;
     if nvararg >= idx && ~isempty(varargin{idx})
@@ -41,8 +39,9 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
 
 
     %% Iterate:
-    doagain = true; it = 0; costs = NaN(MAXIT,1);
     t=1; W = X;
+    costs = NaN(MAXIT,1);
+    doagain = true;  it = 0;  count = 0;
     while doagain
 	it = it + 1;
         % Gradients and Hessians:
@@ -54,13 +53,26 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
 
         % FISTA update
         L = max(R_A(:));
-        X_ = prox_huber(W - 1/L*grad_fW, lambda/L, mu, xpos);
+        X_ = g.prox(W - 1/L*grad_fW, lambda/L, xpos);
         t_ = (1+sqrt(1+4*t^2))/2;
         W = X_ + (t-1)/t_*(X_-X)
         X = X_; t = t_;
 
         %TODO Check conditions to repeat iteration:
-        doagain = norm(Hfun(xDelta(:))) > EPSILON && (it < MAXIT);
+        f = 0;
+        for i = 1:n
+            f = f + norm(convfft2(A(:,:,i), reshape(X, m)) - Y(:,:,i), 'fro')^2/2;
+        end
+        f = f + g.cost(X, lambda);
+        costs(it) = f;
+
+        delta = g.diffsubg(X, grad_fW, lambda, xpos);
+        if norm(delta(:))/sqrt(prox(m)) < EPSILON
+            count = count+1;
+        else
+            count = 0;
+        end
+        doagain = count > 10 && (it < MAXIT);
     end
 
     % Return solution:
@@ -69,20 +81,4 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
     Xsol.f = f;
     info.numit = it;
     info.costs = costs(1:it);
-end
-
-function [ out ] = obj_function ( X, A, Y, lambda, mu )
-    m = size(Y);
-
-    if (numel(m) > 2)
-        n = m(3); m = m(1:2);
-    else
-        n = 1;
-    end
-
-    out = 0;
-    for i = 1:n
-        out = out + norm(convfft2(A(:,:,i), reshape(X, m)) - Y(:,:,i), 'fro')^2/2;
-    end
-    out = out + lambda*huber(X);
 end
