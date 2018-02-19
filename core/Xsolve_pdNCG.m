@@ -9,7 +9,9 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
 %   Algorithm from (Fountoulakis and Gondzio '14).
 
     % Initialize variables and function handles:
-    load([fileparts(mfilename('fullpath')) '\..\config\Xsolve_config.mat']);
+    fpath = fileparts(mfilename('fullpath'));
+    addpath([fpath '/helpers']);
+    load([fpath '/../config/Xsolve_config.mat']); %#ok<*LOAD>
 
     m = size(Y);
     if (numel(m) > 2)
@@ -22,7 +24,7 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
 
     %% Checking arguments:
     nvararg = numel(varargin);
-    if nvararg > 1
+    if nvararg > 2
         error('Too many input arguments.');
     end
 

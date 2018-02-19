@@ -3,8 +3,8 @@ function showims( Y, A0, X0, A, X, k, kplus, idx )
     A = reshape(A, [k size(Y,3)]);
 
     Y_hat = convfft2(A(:,:,idx),X);
-    subplot(321); imagesc(abs(Y(:,:,idx)));     ylabel('abs(Y)'); title('Original');
-    subplot(322); imagesc(abs(Y_hat));          title('Recovered');
+    subplot(321); imagesc((Y(:,:,idx)));     ylabel('Y'); title('Original');
+    subplot(322); imagesc((Y_hat));          title('Recovered');
     
     subplot(324); imagesc(abs(A(:,:,idx)));
     subplot(323); imagesc(abs(A0(:,:,idx)));

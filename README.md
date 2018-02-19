@@ -7,6 +7,10 @@ Our package is motivated by studies in blind deconvolution as a nonconvex optimi
 For documentations, info and references see [docs/README.ipynb](./docs/README.ipynb).
 
 ## Updates
+**2018-02-19**:
+- Removed `signflip` option
+- Option `getbias` to estimate constant bias is added across `SBD.m`, `Asolve_Manopt.m` and `Xsolve_FISTA.m`. The pdNCG solver is now depreciated in terms of both `Xpos` and `getbias`.
+
 **2018-01-31**:
 - Option to solve for **X**>=0 `Xpos` is included.
 - Xsolver changed from pdNCG to FISTA, and the sparsity surrogate is changed from pseudo-Huber to Huber function.

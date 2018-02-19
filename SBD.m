@@ -1,4 +1,4 @@
-function [ Aout, Xout, extras ] = SBD( Y, k, params, dispfun )
+function [ Aout, Xout, bout, extras ] = SBD( Y, k, params, dispfun )
 %SBD Summary of this function goes here
 %
 %   PARAMS STRUCT:
@@ -20,20 +20,10 @@ function [ Aout, Xout, extras ] = SBD( Y, k, params, dispfun )
 %   Finally, two optional fields for the struct. These features are
 %   automatically disabled if the fields are not included or are empty:
 %
-%       signflip, float      : attempts to choose the sign of A and X after
-%           each ASolve so the majority of activations in X are positive.
+%       xpos,     bool      :  Constrain X to have nonnegative entries
+%           when running XSolve.
 %
-%           Setting signflip < 0 disables this feature.
-%
-%           Setting signflip >= 0 considers the 'activations' of X to be
-%           entries with abs. value geq signflip * max(X(:)), then
-%           checking forthe potential sign flip.
-%
-%
-%       xpos,     bool    :  Constrain X to have nonnegative entries
-%           when running XSolve during Phase II. Should be used in
-%           conjunction with signflip to prevent a trivial X from being
-%           returned pathologically.
+%       getbias,  bool       : Extract constant bias from observation.
 %
 
 
@@ -52,16 +42,17 @@ if params.phase2
     nrefine = params.nrefine;
 end
 
-if ~isfield(params, 'signflip') || isempty(params.signflip)
-    signflip = -1;
-else
-    signflip = params.signflip;
-end
-
 if ~isfield(params, 'xpos') || isempty(params.xpos)
-    xpos = 0;
+    xpos = false;
 else
     xpos = params.xpos;
+end
+
+
+if ~isfield(params, 'getbias') || isempty(params.getbias)
+    getbias = false;
+else
+    getbias = params.getbias;
 end
 
 %% PHASE I: First pass at BD
@@ -70,9 +61,10 @@ dispfun1 = @(A, X) dispfun(Y, A, X, k, [], 1);
 fprintf('PHASE I: \n=========\n');
 A = randn([k n]); A = A/norm(A(:));
 
-[A, Xsol, info] = Asolve_Manopt( Y, A, lambda1, [], xpos, dispfun1);
+[A, Xsol, info] = Asolve_Manopt( Y, A, lambda1, [], xpos, getbias, dispfun1);
 extras.phase1.A = A;
 extras.phase1.X = Xsol.X;
+extras.phase1.b = Xsol.b;
 extras.phase1.info = info;
 
 %% PHASE II: Lift the sphere and do lambda continuation
@@ -94,7 +86,7 @@ if params.phase2
     i = 1;
     while i <= nrefine + 1
         fprintf('lambda = %.1e: \n', lambda);
-        [A2, X2sol, info] = Asolve_Manopt( Y, A2, lambda, X2sol, xpos, dispfun2 );
+        [A2, X2sol, info] = Asolve_Manopt( Y, A2, lambda, X2sol, xpos, getbias, dispfun2 );
         fprintf('\n');
 
         %Attempt to 'unshift" the a and x by taking the l1-norm over all k-contiguous elements:
@@ -113,9 +105,10 @@ if params.phase2
         X2sol.W = circshift(X2sol.W,tau);
 
         % Save phase 2 extras:
-        if i == 1;  idx = 1;    else idx = i;    end
+        if i == 1;  idx = 1;    else; idx = i;    end
         extras.phase2(idx).A = A2;
         extras.phase2(idx).X = X2sol.X;
+        extras.phase2(idx).b = X2sol.b;
         extras.phase2(idx).info = info;
         if i == 1;  extras.phase2 = fliplr(extras.phase2);  end
 
@@ -130,13 +123,7 @@ end
 Aout = A2(kplus(1)+(1:k(1)), kplus(2)+(1:k(2)), :);
 Xout = circshift(X2sol.X,kplus) * norm(Aout(:));
 Aout = Aout/norm(Aout(:));
-
-if signflip
-    thresh = 0.2*max(abs(Xout(:)));
-    sgn = sign(sum(Xout(abs(Xout) >= thresh)));
-    Aout = sgn*Aout;
-    Xout = sgn*Xout;
-end
+bout = X2sol.b;
 
 runtime = toc(starttime);
 fprintf('\nDone! Runtime = %.2fs. \n\n', runtime);

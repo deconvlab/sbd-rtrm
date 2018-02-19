@@ -4,7 +4,7 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
 %       [ Aout, Xsol, Stats ] = Asolve_Manopt( Y, Ain, lambda, mu )
 %
 %   - Optional variables:
-%       [ ... ] = Asolve_Manopt( ... , Xinit, Xpos, dispfun )
+%       [ ... ] = Asolve_Manopt( ... , Xinit, Xpos, getbias, dispfun )
 %
 
     load([fileparts(mfilename('fullpath')) '/../config/Asolve_config.mat']); %#ok<*LOAD>
@@ -20,10 +20,17 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
 
     %% Handle the extra variables:
     nvarargin = numel(varargin);
-    if nvarargin > 3
+    if nvarargin > 4
         error('Too many input arguments.');
     end
 
+    idx = 3;
+    if nvarargin < idx || isempty(varargin{idx})
+        getbias = false;
+    else
+        getbias = varargin{idx};
+    end
+    
     idx = 2;
     if nvarargin < idx || isempty(varargin{idx})
         xpos = false;
@@ -38,7 +45,7 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
         xinit = varargin{idx};
     end
 
-    idx = 3;
+    idx = 4;
     if nvarargin < idx || isempty(varargin{idx})
         dispfun = @(a, X) 0;
     else
@@ -58,9 +65,9 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
     %}
 
     problem.M = spherefactory(prod(k)*n);
-    problem.cost = @(a, store) costfun(a, store, Y, k, n, lambda, mu, xinit, xpos );
-    problem.egrad = @(a, store) egradfun(a, store,  Y, k, n, lambda, mu, xinit, xpos );
-    problem.ehess = @(a, u, store) ehessfun(a, u, store,  Y, k, n, lambda, mu, xinit, xpos );
+    problem.cost = @(a, store) costfun(a, store, Y, k, n, lambda, mu, xinit, xpos, getbias );
+    problem.egrad = @(a, store) egradfun(a, store,  Y, k, n, lambda, mu, xinit, xpos, getbias );
+    problem.ehess = @(a, u, store) ehessfun(a, u, store,  Y, k, n, lambda, mu, xinit, xpos, getbias );
 
     options.statsfun = @(problem, a, stats, store) statsfun( problem, a, stats, store, k, n, saveiterates, dispfun);
     %options.stopfun = @(problem, x, info, last) stopfun(problem, x, info, last, TRTOL);
@@ -79,50 +86,52 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, varargin )
 
         Xsol.X = extras.Xiter(:,:,end);
         Xsol.W = info(end).W;
+        Xsol.b = info(end).b;
     else
-        Xsol = Xsolve_FISTA( Y, Aout, lambda, mu, xinit, xpos );
+        Xsol = Xsolve_FISTA( Y, Aout, lambda, mu, xinit, xpos, getbias );
     end
 end
 
-function [ cost, store ] = costfun( a, store, Y, k, n, lambda, mu, xinit, xpos )
+function [ cost, store ] = costfun( a, store, Y, k, n, lambda, mu, xinit, xpos, getbias )
     if ~isfield(store, 'X')
-        store = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos );
+        store = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos, getbias );
     end
 
     cost = store.cost;
 end
 
-function [ egrad, store ] = egradfun( a, store, Y, k, n, lambda, mu, xinit, xpos )
+function [ egrad, store ] = egradfun( a, store, Y, k, n, lambda, mu, xinit, xpos, getbias )
     if ~isfield(store, 'X')
-        store = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos );
+        store = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos, getbias );
     end
 
     m = size(store.X);
     egrad = zeros(prod(k)*n,1);
     for i = 1:n
         idx = (i-1)*prod(k) + (1:prod(k));
-        tmp = convfft2( store.X, convfft2( reshape(a(idx), k), store.X ) - Y(:,:,i), 1, m+k-1, m);
+        tmp = convfft2( store.X, convfft2( reshape(a(idx), k), store.X ) + store.b - Y(:,:,i), 1, m+k-1, m);
         tmp = tmp(1:k(1), 1:k(2));
         egrad(idx) = tmp(:);
     end
 end
 
-function [ ehess, store ] = ehessfun( a, u, store, Y, k, n, lambda, mu, xinit, xpos )
+function [ ehess, store ] = ehessfun( a, u, store, Y, k, n, lambda, mu, xinit, xpos, getbias )
     if ~isfield(store, 'X')
-        store = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos );
+        store = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos, getbias );
     end
 
     ehess = H_function( u, Y, reshape(a, [k n]), store.X, lambda, mu );
 end
 
-function [ store ] = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos )
+function [ store ] = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos, getbias )
     % Updates the cache to store X*(A), and the active-set whenever a new
     % a new iteration by the trust-region method needs it.
 
-    sol = Xsolve_FISTA( Y, reshape(a, [k n]), lambda, mu, xinit, xpos );
+    sol = Xsolve_FISTA( Y, reshape(a, [k n]), lambda, mu, xinit, xpos, getbias );
 
     store.X = sol.X;
     store.W = sol.W;
+    store.b = sol.b;
     store.cost = sol.f;
 end
 
@@ -131,6 +140,7 @@ function [ stats ] = statsfun( problem, a, stats, store, k, n, saveiterates, dis
         stats.A = reshape(a, [k n]);
         stats.X = store.X;      % So X could be returned at the end.
         stats.W = store.W;
+        stats.b = store.b;
     end
     dispfun(a, store.X);
 end

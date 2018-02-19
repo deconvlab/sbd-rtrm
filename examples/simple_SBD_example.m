@@ -29,7 +29,8 @@ while ~X0_good
     X0_good = sum(X0(:) ~= 0) > 0;
 end
 
-Y = convfft2(A0, X0) + sqrt(eta)*randn(m);     % observation
+b0 = randn;
+Y = convfft2(A0, X0) + b0 +sqrt(eta)*randn(m);     % observation
 
 %% II. Sparse Blind Deconvolution:
 %  ===============================
@@ -47,6 +48,7 @@ params.nrefine = 3;                 % number of refinements
 
 params.signflip = 0.2;              % want entrices of X to be nonnegative
 params.xpos     = true;
+params.getbias  = true;
 
 % RUN SBD
-[Aout, Xout, extras] = SBD( Y, k, params, dispfun );
+[Aout, Xout, bout, extras] = SBD( Y, k, params, dispfun );
