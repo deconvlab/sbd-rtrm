@@ -16,5 +16,6 @@ For documentations, info and references see [docs/README.ipynb](./docs/README.ip
 - Xsolver changed from pdNCG to FISTA, and the sparsity surrogate is changed from pseudo-Huber to Huber function.
 
 ## Upcoming changes
+- Adding a reweighting method to sharpen recovered activation maps
 - Make `SBD.m` work for multiple slices of data
 - Account for border effects
