@@ -49,6 +49,7 @@ params.nrefine = 3;                 % number of refinements
 params.signflip = 0.2;              % want entrices of X to be nonnegative
 params.xpos     = true;
 params.getbias  = true;
+params.Xsolve = 'pdNCG';            % choose Xsolve: 'FISTA' or 'pdNCG'. 
 
 % RUN SBD
 [Aout, Xout, bout, extras] = SBD( Y, k, params, dispfun );

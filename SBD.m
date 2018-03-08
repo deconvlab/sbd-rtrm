@@ -20,7 +20,10 @@ function [ Aout, Xout, bout, extras ] = SBD( Y, k, params, dispfun )
 %   Finally, two optional fields for the struct. These features are
 %   automatically disabled if the fields are not included or are empty:
 %
-%       xpos,     bool      :  Constrain X to have nonnegative entries
+%       Xsolve,   string     : Pick which Xsolve to use--'FISTA' or
+%       'pdNCG.'
+%
+%       xpos,     bool       :  Constrain X to have nonnegative entries
 %           when running XSolve.
 %
 %       getbias,  bool       : Extract constant bias from observation.
@@ -55,13 +58,19 @@ else
     getbias = params.getbias;
 end
 
+if ~isfield(params, 'Xsolve') || isempty(params.Xsolve)
+    Xsolve = 'FISTA';
+else
+    Xsolve = params.Xsolve;
+end
+
 %% PHASE I: First pass at BD
 dispfun1 = @(A, X) dispfun(Y, A, X, k, [], 1);
 
 fprintf('PHASE I: \n=========\n');
 A = randn([k n]); A = A/norm(A(:));
 
-[A, Xsol, info] = Asolve_Manopt( Y, A, lambda1, [], xpos, getbias, dispfun1);
+[A, Xsol, info] = Asolve_Manopt( Y, A, lambda1, Xsolve, [], xpos, getbias, dispfun1);
 extras.phase1.A = A;
 extras.phase1.X = Xsol.X;
 extras.phase1.b = Xsol.b;
@@ -86,7 +95,7 @@ if params.phase2
     i = 1;
     while i <= nrefine + 1
         fprintf('lambda = %.1e: \n', lambda);
-        [A2, X2sol, info] = Asolve_Manopt( Y, A2, lambda, X2sol, xpos, getbias, dispfun2 );
+        [A2, X2sol, info] = Asolve_Manopt( Y, A2, lambda, Xsolve, X2sol, xpos, getbias, dispfun2 );
         fprintf('\n');
 
         %Attempt to 'unshift" the a and x by taking the l1-norm over all k-contiguous elements:

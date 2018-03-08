@@ -4,7 +4,7 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
 %       [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu )
 %
 %   - Optional variables:
-%       [ ... ] = Xsolve_pdNCG( ... , Xinit )
+%       [ ... ] = Xsolve_pdNCG( ... , Xinit, xpos)
 %
 %   Algorithm from (Fountoulakis and Gondzio '14).
 
@@ -39,8 +39,7 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
         end
     end
     f = objfun(X);
-
-
+    
     %% Iterate:
     doagain = true; it = 0;
     while doagain
@@ -91,6 +90,7 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
     Xsol.X = X;
     Xsol.W = W;
     Xsol.f = f;
+    Xsol.b = 0; %compatible with FISTA
     info.numit = it;
     info.alphatoolow = alphatoolow;
 end
