@@ -19,7 +19,7 @@ A0 = proj2oblique(randn(k));
 m = [64 64];            % image size for each slice / observation grid
 
 %   Each pixel has probability theta of being a kernel location
-theta = 3e-3;           % activation concentration
+theta = 3e-2;           % activation concentration
 eta = 1e-3;             % additive noise variance
 
 % GENERATE
@@ -49,7 +49,7 @@ params.nrefine = 3;                 % number of refinements
 params.signflip = 0.2;              % want entrices of X to be nonnegative
 params.xpos     = true;
 params.getbias  = true;
-params.Xsolve = 'pdNCG';            % choose Xsolve: 'FISTA' or 'pdNCG'. 
+params.Xsolve = 'FISTA';            % choose Xsolve: 'FISTA' or 'pdNCG'. 
 
 % RUN SBD
 [Aout, Xout, bout, extras] = SBD( Y, k, params, dispfun );

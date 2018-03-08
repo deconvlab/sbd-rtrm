@@ -93,9 +93,9 @@ function [ Aout, Xsol, extras ] = Asolve_Manopt( Y, Ain, lambda, Xsolve, varargi
         Xsol.b = info(end).b;
     else
         if strcmp(Xsolve,'FISTA')
-            Xsol = Xsolve_FISTA( Y, Aout, lambda, mu, xinit, xpos, getbias );
+            Xsol = Xsolve_FISTA( Y, Aout, lambda, mu, xinit, xpos, getbias);
         elseif strcmp(Xsolve,'pdNCG')
-            Xsol = Xsolve_pdNCG(Y, Aout, lambda, mu, xinit, xpos);
+            Xsol = Xsolve_pdNCG(Y, Aout, lambda, mu, xinit, xpos, getbias);
         end
     end
 end
@@ -137,7 +137,7 @@ function [ store ] = computeX( a, store, Y, k, n, lambda, mu, xinit, xpos, getbi
     if strcmp(Xsolve,'FISTA')
         sol = Xsolve_FISTA( Y, reshape(a, [k n]), lambda, mu, xinit, xpos, getbias );
     elseif strcmp(Xsolve,'pdNCG')
-        sol = Xsolve_pdNCG( Y, reshape(a, [k n]), lambda, mu, xinit, xpos);
+        sol = Xsolve_pdNCG( Y, reshape(a, [k n]), lambda, mu, xinit, xpos, getbias);
     end
         
     store.X = sol.X;

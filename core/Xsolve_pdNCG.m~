@@ -4,7 +4,7 @@ function [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu, varargin )
 %       [ Xsol, info ] = Xsolve_pdNCG( Y, A, lambda, mu )
 %
 %   - Optional variables:
-%       [ ... ] = Xsolve_pdNCG( ... , Xinit, xpos, getbias)
+%       [ ... ] = Xsolve_pdNCG( ... , Xinit, xpos)
 %
 %   Algorithm from (Fountoulakis and Gondzio '14).
 

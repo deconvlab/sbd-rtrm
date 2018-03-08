@@ -7,7 +7,7 @@ function [] = default_config_settings( mode )
 %           Verbose by default.
 %
 
-    fp = [fileparts(mfilename('fullpath')) '/']; %/ for linux, \ for windows.
+    fp = [fileparts(mfilename('fullpath')) '/'];
     clean = @() eval('clearvars -except fp mode clean shared');
     
     %% Shared settings
@@ -21,7 +21,7 @@ function [] = default_config_settings( mode )
     % Manopt settings:
     options.verbosity = 2;
     options.tolgradnorm = 1e-8;
-    options.maxiter = 3;          % maximum iterations for RTRM
+    options.maxiter = 1e2;          % maximum iterations for RTRM
     options.storedepth = 5;
 
     %   for gradient methods:
