@@ -27,7 +27,7 @@ switch kerneltype
     
     case 'simulated_STM'
     % Randomly choose n kernel slices from simulated LDoS data
-        load('example_data\LDoS_sim.mat');
+        load('example_data/LDoS_sim.mat');
         sliceidx = randperm(size(LDoS_sim,3), n);
         
         A0 = NaN([k n]);
@@ -69,11 +69,12 @@ params.lambda1 = 1e-1;              % regularization parameter for Phase I
 params.phase2 = true;               % whether to do Phase II (refinement)
 params.kplus = ceil(0.5 * k);       % padding for sphere lifting
 params.lambda2 = 5e-2;              % FINAL reg. param. value for Phase II
-params.nrefine = 3;                 % number of refinements
+params.nrefine = 1;                 % number of refinements
 
 % Want entries of X to be nonnegative: see SBD_main.m
 params.signflip = 0.2;
 params.xpos     = true;
+params.Xsolve = 'FISTA';
 
 %% 2. The fun part
 [Aout, Xout, extras] = SBD( Y, k, params, dispfun );

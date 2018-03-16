@@ -7,6 +7,10 @@ Our package is motivated by studies in blind deconvolution as a nonconvex optimi
 For documentations, info and references see [docs/README.ipynb](./docs/README.ipynb).
 
 ## Updates
+**2018-03-16**:
+-Implemented backwards Compatibility with Xsolve_pdNCG. 
+-Multiple slices now works correctly for Xsolve_FISTA.
+
 **2018-02-19**:
 - Removed `signflip` option
 - Option `getbias` to estimate constant bias is added across `SBD.m`, `Asolve_Manopt.m` and `Xsolve_FISTA.m`. The pdNCG solver is now depreciated in terms of both `Xpos` and `getbias`.
@@ -17,5 +21,4 @@ For documentations, info and references see [docs/README.ipynb](./docs/README.ip
 
 ## Upcoming changes
 - Adding a reweighting method to sharpen recovered activation maps
-- Make `SBD.m` work for multiple slices of data
 - Account for border effects
