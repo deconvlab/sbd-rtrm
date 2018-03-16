@@ -7,7 +7,7 @@ function [] = default_config_settings( mode )
 %           Verbose by default.
 %
 
-    fp = [fileparts(mfilename('fullpath')) '\'];
+    fp = [fileparts(mfilename('fullpath')) '/'];
     clean = @() eval('clearvars -except fp mode clean shared');
     
     %% Shared settings

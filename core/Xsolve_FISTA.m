@@ -22,6 +22,7 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
     else
         n = 1;
     end
+  
 
     %% Checking arguments:
     nvararg = numel(varargin);
@@ -45,7 +46,8 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
         getbias = varargin{idx};
     end
 
-
+    
+    
     %% Iterate:    
     t=1; W = X; u = b;
     costs = NaN(MAXIT,2);
@@ -63,7 +65,9 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
 
         % FISTA update
         L = max(R_A(:));
+        %size(W);
         X_ = g.prox(W - 1/L*grad_fW, lambda/L, xpos);
+        %size(X_);
         t_ = (1+sqrt(1+4*t^2))/2;
         W = X_ + (t-1)/t_*(X_-X);
         if getbias
@@ -83,7 +87,8 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
 
         tmp = grad_fW;
         for i = 1:n
-            tmp(:,:,i) = tmp(:,:,i) + grad_fu(i);  
+            %tmp(:,:,i) = tmp(:,:,i) + grad_fu(i); 
+            tmp = tmp + grad_fu(i); %testing
         end
         delta = g.diffsubg(X, -tmp, lambda, xpos);
         delta = norm(delta(:))/sqrt(prod(m));
@@ -94,6 +99,7 @@ function [ Xsol, info ] = Xsolve_FISTA( Y, A, lambda, mu, varargin )
         end
         doagain = count < 10 && (it < MAXIT);
     end
+    
 
     % Return solution:
     Xsol.X = X;
